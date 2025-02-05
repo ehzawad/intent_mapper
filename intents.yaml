@@ -1,0 +1,18 @@
+intents:
+  account_balance:
+    canonical_question: "What is your account balance?"
+    variations:
+      - "Can you tell me how much money I've got in my account right now?"
+      - "Could you check and let me know my current account balance?"
+      - "I'm wondering, what's the balance in my account at the moment?"
+      - "Do you mind checking what I've got left in my account?"
+      - "Hey, could you give me an update on my account balance?"
+
+  card_status:
+    canonical_question: "What is your card status?"
+    variations:
+      - "Is my card active?"
+      - "Can you check if my card is working?"
+      - "What's the current status of my card?"
+      - "Is there any issue with my card?"
+      - "Could you tell me if my card is activated?"

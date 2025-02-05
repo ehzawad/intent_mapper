@@ -1,0 +1,22 @@
+.env
+ok/
+venv/
+
+# Caches
+__pycache__/
+*.pyc
+.pytest_cache/
+embedding_cache.json
+
+# Database
+chroma_db/
+
+# IDEs
+.vscode/
+.idea/
+
+# System
+.DS_Store
+
+# Logs
+*.log
