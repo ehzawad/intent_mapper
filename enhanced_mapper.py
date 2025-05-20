@@ -112,7 +112,8 @@ class IntentMapper:
                 {
                     "intent": intent_name,
                     "is_canonical": True,
-                    "canonical_question": canonical
+                    "canonical_question": canonical,
+                    "subcategory": None  # Parent-level intent
                 }
             )
 
@@ -125,9 +126,41 @@ class IntentMapper:
                     {
                         "intent": intent_name,
                         "is_canonical": False,
-                        "canonical_question": canonical
+                        "canonical_question": canonical,
+                        "subcategory": None  # Parent-level intent
                     }
                 )
+            
+            # Process subcategories if they exist
+            if 'subcategories' in intent_data:
+                for subcategory_name, subcategory_data in intent_data['subcategories'].items():
+                    # Add subcategory canonical question
+                    sub_canonical = subcategory_data['canonical_question']
+                    embedding = self.cache.get_embedding(sub_canonical)
+                    self.vector_store.add_vector(
+                        sub_canonical,
+                        embedding,
+                        {
+                            "intent": intent_name,
+                            "subcategory": subcategory_name,
+                            "is_canonical": True,
+                            "canonical_question": sub_canonical
+                        }
+                    )
+
+                    # Add subcategory variations
+                    for sub_variation in subcategory_data['variations']:
+                        embedding = self.cache.get_embedding(sub_variation)
+                        self.vector_store.add_vector(
+                            sub_variation,
+                            embedding,
+                            {
+                                "intent": intent_name,
+                                "subcategory": subcategory_name,
+                                "is_canonical": False,
+                                "canonical_question": sub_canonical
+                            }
+                        )
 
     def _load_intents(self) -> Dict:
         """Load intents from YAML file."""
@@ -158,6 +191,7 @@ class IntentMapper:
             text, metadata, confidence = match
             return {
                 "intent": metadata["intent"],
+                "subcategory": metadata.get("subcategory"), # Use .get() for safety, defaulting to None
                 "canonical_question": metadata["canonical_question"],
                 "confidence": confidence,
                 "status": "success"
@@ -175,10 +209,16 @@ def main():
 
     # Test questions
     test_questions = [
-        "How much do I have in my account?",
-        "Is my card working properly?",
-        "What's my current balance?",
-        "Can you check my card status?",
+        "How much do I have in my account?", # Existing: account_balance
+        "Is my card working properly?", # Existing: card_status
+        "What's my current balance?", # Existing: account_balance variation
+        "Can you check my card status?", # Existing: card_status variation
+        "I'm having an issue with a payment.", # New: payment_issues (parent)
+        "My transaction was declined.", # New: payment_issues -> failed_payment
+        "I don't recognize a charge.", # New: payment_issues -> unauthorized_payment
+        "Something went wrong with my payment.", # New: payment_issues (parent variation)
+        "Why did my payment not go through?", # New: payment_issues -> failed_payment variation
+        "There's an unauthorized transaction on my account.", # New: payment_issues -> unauthorized_payment variation
         "Tell me about the weather",  # Should trigger fallback
     ]
 
@@ -189,6 +229,8 @@ def main():
         
         if result["status"] == "success":
             print(f"Matched intent: {result['intent']}")
+            if result.get("subcategory"):
+                print(f"Matched subcategory: {result['subcategory']}")
             print(f"Canonical question: {result['canonical_question']}")
             print(f"Confidence: {result['confidence']:.2f}")
         else:

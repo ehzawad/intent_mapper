@@ -16,3 +16,20 @@ intents:
       - "What's the current status of my card?"
       - "Is there any issue with my card?"
       - "Could you tell me if my card is activated?"
+
+  payment_issues:
+    canonical_question: "I have a problem with a payment."
+    variations:
+      - "Something went wrong with my payment."
+      - "I'm having trouble with a transaction."
+    subcategories:
+      failed_payment:
+        canonical_question: "A payment I made failed."
+        variations:
+          - "My transaction was declined."
+          - "Why did my payment not go through?"
+      unauthorized_payment:
+        canonical_question: "I see a payment I don't recognize."
+        variations:
+          - "There's an unauthorized transaction on my account."
+          - "I didn't make this payment."
